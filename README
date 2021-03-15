@@ -1,0 +1,48 @@
+########### buzz~ #################
+
+buzz~ generates a signal from a set of harmonically related partials. 
+Amplitude and number of these partials are controllable. 
+
+INLETS
+left to right
+
+Frequency:
+Sets the fundamental frequency in Hz.
+
+Phase:
+Sets the phase of the internal phasor object. Normally not needed.
+
+
+H: 
+The highest partial is controlled by a value called "H" which sets the highest
+generated (integer) multiple of the fundamental frequency. 
+
+a: 
+The amplitudes of the partials are controlled by an inlet "a". Each sine
+component of the signal is scaled by pow(a, k). An a-value of 1 gets ignored,
+because it would lead to a division by 0. One should set a to values 0 < a < 1
+in typical setups, as values greater 1 can quickly lead to aliasing (which could
+be wanted, too)
+
+Help patch: 
+The help patch gives an example for using buzz~. It incorporates the dsp-object
+from the IEMLIB for PD, but it will work without it as well, you will just get
+some error messages on startup.
+
+CREDITS
+
+The theory behind buzz~ was taken from:
+John Lazzaro and John Wawrzynek: "Subtractive Synthesis without Filters"
+This document is available at http://www.cs.berkeley.edu/~lazzaro/sa/pubs/
+
+Most of the code is copyrighted by Miller Puckette as it is the code for the
+phasor~ generator in PD found at http://www-crca.ucsd.edu/~msp/software.html
+
+Making this code work as a buzz~ object was done by me, Frank Barknecht
+<frank.barknecht@netcologne.de>
+
+The included Windows DLL and the adaption of the Makefile for W32-systems were
+done by Olaf Matthes <olaf.matthes@gmx.de>
+
+As most of buzz~ is taken from code by Miller Puckette, buzz~ has the same
+copyright as PD. This license can be found in the file COPYRIGHT.

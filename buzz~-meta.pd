@@ -1,0 +1,7 @@
+#N canvas 100 100 420 420 10;
+#X text 20 20 META this is prototype of a libdir meta file;
+#X text 20 40 NAME buzz~ ;
+#X text 20 60 AUTHOR Frank Barknecht <frank.barknecht@netcologne.de> ;
+#X text 20 80 DESCRIPTION buzz~ generates a signal from a set of harmonically related partials. ;
+#X text 20 100 LICENSE see COPYRIGHT ;
+#X text 20 120 VERSION 0.2.1 ;
