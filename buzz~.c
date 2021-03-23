@@ -12,60 +12,92 @@ typedef struct _buzz_tilde
   t_object x_obj;
   t_float phase;
   t_float div_2pi_sr;
-  t_float a;
-  t_float h;
-  t_float s1;
-  t_float s2;
-  t_float x_f;	    /* scalar frequency */
+  t_float h1;
+  t_float h2;
+  t_float ha;
+  t_float hm;
 } t_buzz_tilde;
 
-static void *buzz_tilde_new(t_floatarg f)
+// -------------------------------------------------------------------------- //
+static void *buzz_tilde_new(void)
 {
   t_buzz_tilde *x = (t_buzz_tilde *)pd_new(buzz_tilde_class);
-  x->x_f = f;
-  inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_float, gensym("ft1"));
-  inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_float, gensym("f_a"));
-  inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_float, gensym("f_H"));
-  x->phase = 0;
-  x->div_2pi_sr = 0;
-  x->a = 0;
-  x->h = 0;
-  x->s1 = 0;
-  x->s2 = 0;
+  inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_signal, &s_signal);
   outlet_new(&x->x_obj, gensym("signal"));
+  x->phase = 0;
   return (x);
 }
 
+// -------------------------------------------------------------------------- //
 static t_int *buzz_tilde_perform(t_int *w)
 {
   t_buzz_tilde *x = (t_buzz_tilde *)(w[1]);
-  t_float *in = (t_float *)(w[2]);
-  t_float *out = (t_float *)(w[3]);
-  int n = (int)(w[4]);
+  t_float *in_freq = (t_float *)(w[2]);
+  t_float *in_a = (t_float *)(w[3]);
+  t_float *out = (t_float *)(w[4]);
+  int n = (int)(w[5]);
   t_float phase = x->phase;
   t_float div_2pi_sr = x->div_2pi_sr;
-  t_float a = x->a;
-  t_float a2 = 2*a ;
-  t_float ap2 = a*a;
-  t_float s1 = x->s1;
-  t_float s2 = x->s2;
-  t_float h2 = x->h + 2;
+  t_float a;
+  t_float a2;
+  t_float ap2;
+  t_float s1;
+  t_float s2;
   t_float cs;
   t_float sn;
   t_float h_ph;
   t_float inc;
+  t_float h1 = x->h1;
+  t_float h2 = x->h2;
+  t_float ah;
+  t_float ca;
+  t_float f; // buf
+  t_float ha = x->ha;
+  t_float hm = x->hm;
   
   
   while (n--)
     {
       // increment phase
-      inc = *in++ * div_2pi_sr;
+      inc = *(in_freq++) * div_2pi_sr;
       if      (inc > AC_PI) inc = AC_PI;
       else if (inc < 0.0)   inc = 0.0;
+
+
+      // correction
+      f = inc / AC_PI;
+      f = f*4;
+      if (f>1) f=1;
+      ca = 1.0 - f;
+
+      // phase
       phase += inc;
       if (phase > AC_2PI) phase -= AC_2PI;
+
+      // a 0 ... 1
+      a = *(in_a++);
+      // clip
+      if      (a < 0) a = 0;
+      else if (a > 1) a = 1;
+
+      // ca
+      a = a * ca;
+
+      // 0.01 ... 0.99
+      a = (a*hm)+ ha;
+
+
+      a2 = a+a;
+      ap2 =a*a;
+
+
+      // calc
+      ah = pow(a, h1);
+      s1 = (1 - a) / (1 - fabs(ah));
+      s2 = (1 - a) / (1/fabs(ah) - fabs(ah)/ah);
+      
 	
-      // do work with my_phi:
+      // do work with phase:
       cs = cos(phase);
       sn = sin(phase);
       h_ph = h2 * phase;
@@ -73,53 +105,46 @@ static t_int *buzz_tilde_perform(t_int *w)
 	/ (1 - (a2*cs) + ap2);
     }
   x->phase = phase;
-  return (w+5);
+  return (w+6);
 }
 
+// -------------------------------------------------------------------------- //
 static void buzz_tilde_dsp(t_buzz_tilde *x, t_signal **sp)
 {
   x->div_2pi_sr = AC_2PI / sp[0]->s_sr;
-  dsp_add(buzz_tilde_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
+  dsp_add(buzz_tilde_perform,
+	  5, 
+	  x, 
+	  sp[0]->s_vec, 
+	  sp[1]->s_vec, 
+	  sp[2]->s_vec, 
+	  sp[0]->s_n);
 }
 
-static void varsetup (t_buzz_tilde *x)
-{
-  t_float a = x->a;
-  t_float h = x->h;
-  t_float ah = pow(a, h+1);
-  if (a != 1 )
-    {
-      x->s1 = (1 - fabs(a)) / (1 - fabs(ah));
-      x->s2 = (1 - fabs(a)) / (1/fabs(ah) - fabs(ah)/ah);
-    }
-}
-
-static void buzz_tilde_ft1(t_buzz_tilde *x, t_float f)
+// -------------------------------------------------------------------------- //
+static void buzz_tilde_phase(t_buzz_tilde *x, t_floatarg f)
 {
   x->phase = f;
 }
 
-
-static void buzz_tilde_a(t_buzz_tilde *x, t_float f)
+// -------------------------------------------------------------------------- //
+static void buzz_tilde_h(t_buzz_tilde *x, t_floatarg f)
 {
-  x->a = f;
-  varsetup(x);
-}
-
-static void buzz_tilde_H(t_buzz_tilde *x, t_float f)
-{
-  x->h = f;
-  varsetup(x);
+  if (f<0) f = 0;
+  x->h1 = f+1;
+  x->h2 = f+2;
+  x->ha = (f*0.0043)+0.011;
+  x->hm = 0.995 - x->ha;
 }
 
 
+// -------------------------------------------------------------------------- //
 void buzz_tilde_setup(void)
 {
   buzz_tilde_class = class_new(gensym("buzz~"), (t_newmethod)buzz_tilde_new, 0,
-			       sizeof(t_buzz_tilde), 0, A_DEFFLOAT, 0);
-  CLASS_MAINSIGNALIN(buzz_tilde_class, t_buzz_tilde, x_f);
+			       sizeof(t_buzz_tilde), 0, 0, 0);
+  class_addmethod(buzz_tilde_class, nullfn, gensym("signal"), 0);
   class_addmethod(buzz_tilde_class, (t_method)buzz_tilde_dsp, gensym("dsp"), 0);
-  class_addmethod(buzz_tilde_class, (t_method)buzz_tilde_ft1, gensym("ft1"), A_FLOAT, 0);
-  class_addmethod(buzz_tilde_class, (t_method)buzz_tilde_a, gensym("f_a"), A_FLOAT, 0);
-  class_addmethod(buzz_tilde_class, (t_method)buzz_tilde_H, gensym("f_H"), A_FLOAT, 0);
+  class_addmethod(buzz_tilde_class, (t_method)buzz_tilde_phase, gensym("phase"), A_FLOAT, 0);
+  class_addmethod(buzz_tilde_class, (t_method)buzz_tilde_h, gensym("h"), A_FLOAT, 0);
 }
