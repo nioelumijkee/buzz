@@ -1,7 +1,6 @@
 **buzz~** - subctractive synthesis without filters 
 
-
-################################ buzz~ #########################################
+==========================================================================
 
 buzz~ generates a signal from a set of harmonically related partials. 
 Amplitude and number of these partials are controllable. 
@@ -20,7 +19,7 @@ h:
 The highest partial is controlled by a value called "h" which sets the highest
 generated (integer) multiple of the fundamental frequency. 
 
-################################################################################
+==========================================================================
 
 CREDITS
 
@@ -37,4 +36,3 @@ Making this code work as a buzz~ object was done by me, Frank Barknecht
 As most of buzz~ is taken from code by Miller Puckette, buzz~ has the same
 copyright as PD. This license can be found in the file COPYRIGHT.
 
-################################################################################
