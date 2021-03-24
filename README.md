@@ -1,3 +1,6 @@
+**buzz~** - subctractive synthesis without filters 
+
+
 ################################ buzz~ #########################################
 
 buzz~ generates a signal from a set of harmonically related partials. 
