@@ -38,6 +38,10 @@ static t_int *buzz_tilde_perform(t_int *w)
   int n = (int)(w[5]);
   t_float phase = x->phase;
   t_float div_2pi_sr = x->div_2pi_sr;
+  t_float h1 = x->h1;
+  t_float h2 = x->h2;
+  t_float ha = x->ha;
+  t_float hm = x->hm;
   t_float a;
   t_float a2;
   t_float ap2;
@@ -47,13 +51,9 @@ static t_int *buzz_tilde_perform(t_int *w)
   t_float sn;
   t_float h_ph;
   t_float inc;
-  t_float h1 = x->h1;
-  t_float h2 = x->h2;
   t_float ah;
   t_float ca;
   t_float f; // buf
-  t_float ha = x->ha;
-  t_float hm = x->hm;
   
   
   while (n--)
@@ -62,7 +62,6 @@ static t_int *buzz_tilde_perform(t_int *w)
       inc = *(in_freq++) * div_2pi_sr;
       if      (inc > AC_PI) inc = AC_PI;
       else if (inc < 0.0)   inc = 0.0;
-
 
       // correction
       f = inc / AC_PI;
@@ -76,6 +75,7 @@ static t_int *buzz_tilde_perform(t_int *w)
 
       // a 0 ... 1
       a = *(in_a++);
+
       // clip
       if      (a < 0) a = 0;
       else if (a > 1) a = 1;
@@ -83,19 +83,17 @@ static t_int *buzz_tilde_perform(t_int *w)
       // ca
       a = a * ca;
 
-      // 0.01 ... 0.99
-      a = (a*hm)+ ha;
+      // scale
+      a = (a*hm)+ha;
 
-
+      // 
       a2 = a+a;
       ap2 =a*a;
-
 
       // calc
       ah = pow(a, h1);
       s1 = (1 - a) / (1 - fabs(ah));
       s2 = (1 - a) / (1/fabs(ah) - fabs(ah)/ah);
-      
 	
       // do work with phase:
       cs = cos(phase);
@@ -104,6 +102,7 @@ static t_int *buzz_tilde_perform(t_int *w)
       *out++ = ((1 - a*cs) * (s1*cs - s2*cos(h_ph)) - (a*sn*(s2*sin(h_ph) - (s1*sn))))
 	/ (1 - (a2*cs) + ap2);
     }
+  // store
   x->phase = phase;
   return (w+6);
 }
@@ -130,10 +129,11 @@ static void buzz_tilde_phase(t_buzz_tilde *x, t_floatarg f)
 // -------------------------------------------------------------------------- //
 static void buzz_tilde_h(t_buzz_tilde *x, t_floatarg f)
 {
-  if (f<0) f = 0;
-  x->h1 = f+1;
-  x->h2 = f+2;
-  x->ha = (f*0.0043)+0.011;
+  int i = f;
+  if (i<0) i = 0;
+  x->h1 = i+1;
+  x->h2 = i+2;
+  x->ha = ((t_float)i*0.0043)+0.011;
   x->hm = 0.995 - x->ha;
 }
 
