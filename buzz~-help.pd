@@ -1,4 +1,4 @@
-#N canvas 372 134 760 384 10;
+#N canvas 425 168 760 384 10;
 #X obj 299 164 buzz~;
 #X obj 294 303 dac~;
 #X obj 342 240 * 0.01;
@@ -16,14 +16,14 @@
 #X text 458 294 John Lazzaro/John Wawrzynek;
 #X text 435 314 "Subtractive Synthesis without Filters";
 #X text 483 272 * Reference *;
-#X obj 254 53 nbx 5 14 0 1e+37 0 1 empty empty h 0 -8 0 10 -262144
--1 -1 24 256;
+#X obj 254 53 nbx 5 14 0 63 0 1 empty empty h 0 -8 0 10 -262144 -1
+-1 63 256;
 #X obj 399 31 nbx 5 14 0 100 0 1 empty empty a 0 -8 0 10 -262144 -1
--1 64 256;
+-1 0 256;
 #X obj 337 31 nbx 5 14 -1e+37 1e+37 0 1 empty empty phase 0 -8 0 10
--262144 -1 -1 0 256;
+-262144 -1 -1 -2 256;
 #X obj 178 29 nbx 5 14 -1e+37 1e+37 0 1 empty empty pitch 0 -8 0 10
--262144 -1 -1 46.7 256;
+-262144 -1 -1 47.7 256;
 #X msg 178 63 \$1 40;
 #X obj 178 84 line~;
 #X obj 342 220 nbx 5 14 0 1e+37 0 1 empty empty empty 0 -8 0 10 -262144
@@ -33,7 +33,6 @@
 #X obj 399 88 line~;
 #X msg 399 69 \$1 33;
 #X msg 254 70 h \$1;
-#X text 244 15 0 > h > ~75;
 #N canvas 122 159 544 475 fft 0;
 #X obj 23 55 inlet~;
 #X obj 27 215 rfft~;
@@ -85,14 +84,15 @@ until much later.;
 #X connect 23 0 1 0;
 #X connect 25 0 21 1;
 #X restore 350 192 pd fft;
-#X obj 383 168 tgl 18 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+#X obj 383 168 tgl 18 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
 1;
 #N canvas 0 0 450 300 (subpatch) 0;
 #X array F11-spectrum 259 float 0;
 #X coords 0 0.51 258 -0.008 256 130 1;
 #X restore 18 201 graph;
+#X text 250 19 0 > h > 63;
 #X connect 0 0 24 0;
-#X connect 0 0 30 0;
+#X connect 0 0 29 0;
 #X connect 2 0 24 1;
 #X connect 3 0 27 0;
 #X connect 4 0 25 0;
@@ -110,4 +110,4 @@ until much later.;
 #X connect 26 0 0 1;
 #X connect 27 0 26 0;
 #X connect 28 0 0 0;
-#X connect 31 0 30 1;
+#X connect 30 0 29 1;
