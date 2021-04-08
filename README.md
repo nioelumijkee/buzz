@@ -36,3 +36,6 @@ Making this code work as a buzz~ object was done by me, Frank Barknecht
 As most of buzz~ is taken from code by Miller Puckette, buzz~ has the same
 copyright as PD. This license can be found in the file COPYRIGHT.
 
+==========================================================================
+
+now optimized version...   
